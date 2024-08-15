@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Notification Panel with Sidebar</title>
+    <!-- Bootstrap 5 CDN -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <!-- Font Awesome CDN -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+    <style>
+      /* Basic styling for header */
+      .header {
+        background-color: #007bff;
+        color: white;
+        padding: 15px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .header .logo {
+        font-size: 24px;
+      }
+      .header .nav-links {
+        display: flex;
+        gap: 20px;
+        align-items: center;
+      }
+      .header .nav-links a {
+        color: white;
+        text-decoration: none;
+      }
+      .header .hamburger {
+        display: none;
+        font-size: 24px;
+        cursor: pointer;
+      }
+      .header .notification-icon {
+        position: relative;
+        cursor: pointer;
+      }
+      .header .notification-icon .counter {
+        position: absolute;
+        top: -10px;
+        right: -10px;
+        background-color: red;
+        color: white;
+        border-radius: 50%;
+        padding: 2px 6px;
+        font-size: 12px;
+      }
+
+      /* Styling for sidebar */
+      .sidebar {
+        width: 250px;
+        background-color: #343a40;
+        position: fixed;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        padding-top: 20px;
+        transition: transform 0.3s ease;
+        transform: translateX(0);
+        z-index: 1000;
+      }
+      .sidebar.collapsed {
+        transform: translateX(-100%);
+      }
+      .sidebar .menu-item {
+        color: white;
+        padding: 10px 20px;
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+      }
+      .sidebar .menu-item:hover {
+        background-color: #495057;
+      }
+      .sidebar .menu-item i {
+        margin-right: 10px;
+      }
+
+      /* Notification Panel */
+      .notification-panel {
+        position: fixed;
+        top: 0;
+        right: -300px;
+        width: 300px;
+        height: 100%;
+        background-color: white;
+        box-shadow: -2px 0 5px rgba(0, 0, 0, 0.5);
+        overflow-y: auto;
+        transition: right 0.3s ease;
+        z-index: 1000;
+      }
+      .notification-panel.visible {
+        right: 0;
+      }
+      .notification-panel .close-btn {
+        padding: 10px;
+        text-align: right;
+        border-bottom: 1px solid #ddd;
+      }
+      .notification-panel .close-btn button {
+        background: none;
+        border: none;
+        font-size: 20px;
+        cursor: pointer;
+      }
+      .notification-panel .notification {
+        padding: 15px;
+        border-bottom: 1px solid #ddd;
+        cursor: pointer;
+      }
+      .notification.unread {
+        background-color: #f8f9fa;
+        font-weight: bold;
+      }
+
+      /* Modal Styling */
+      .modal-header,
+      .modal-footer {
+        background-color: #007bff;
+        color: white;
+      }
+
+      /* Responsive styles */
+      @media (max-width: 768px) {
+        .header .hamburger {
+          display: block;
+        }
+        .header .nav-links {
+          display: none;
+        }
+        .sidebar {
+          transform: translateX(-100%);
+        }
+        .sidebar.collapsed {
+          transform: translateX(0);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Header -->
+    <div class="header">
+      <div class="logo">Client Logo</div>
+      <div class="nav-links">
+        <a href="#">Management</a>
+        <a href="#">My Profile</a>
+        <div class="notification-icon" id="notificationIcon">
+          <i class="fa-solid fa-bell"></i>
+          <span class="counter" id="notificationCounter">3</span>
+        </div>
+      </div>
+      <div class="hamburger" id="hamburgerMenu">
+        <i class="fa-solid fa-bars"></i>
+      </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+      <div class="menu-item">
+        <i class="fa-solid fa-tachometer-alt"></i><span>Dashboard</span>
+      </div>
+      <div class="menu-item">
+        <i class="fa-solid fa-chart-bar"></i><span>Reports</span>
+      </div>
+      <div class="menu-item">
+        <i class="fa-solid fa-cog"></i><span>Settings</span>
+      </div>
+      <div class="menu-item">
+        <i class="fa-solid fa-sign-out-alt"></i><span>Logout</span>
+      </div>
+    </div>
+
+    <!-- Notification Panel -->
+    <div class="notification-panel" id="notificationPanel">
+      <!-- Close Button -->
+      <div class="close-btn">
+        <button id="closeNotificationPanel">&times;</button>
+      </div>
+      <div
+        class="notification unread"
+        data-id="1"
+        onclick="showNotificationModal(1)"
+      >
+        <h5>New Message</h5>
+        <p>You have a new message.</p>
+        <small>5 minutes ago</small>
+      </div>
+      <div
+        class="notification unread"
+        data-id="2"
+        onclick="showNotificationModal(2)"
+      >
+        <h5>System Alert</h5>
+        <p>Your system is at risk.</p>
+        <small>15 minutes ago</small>
+      </div>
+      <div
+        class="notification unread"
+        data-id="3"
+        onclick="showNotificationModal(3)"
+      >
+        <h5>Update Available</h5>
+        <p>A new update is available.</p>
+        <small>30 minutes ago</small>
+      </div>
+      <!-- More notifications can be added here -->
+    </div>
+
+    <!-- Modal -->
+    <div
+      class="modal fade"
+      id="notificationModal"
+      tabindex="-1"
+      aria-labelledby="notificationModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="notificationModalLabel">
+              Notification Title
+            </h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <p id="notificationMessage">
+              Notification message will be displayed here.
+            </p>
+            <small id="notificationTimestamp">Timestamp</small>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bootstrap and Popper.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
+
+    <!-- Simplified JavaScript -->
+    <script>
+      const notificationIcon = document.getElementById("notificationIcon");
+      const notificationPanel = document.getElementById("notificationPanel");
+      const closeNotificationPanel = document.getElementById(
+        "closeNotificationPanel"
+      );
+      const sidebar = document.getElementById("sidebar");
+      const hamburgerMenu = document.getElementById("hamburgerMenu");
+      const notificationCounter = document.getElementById(
+        "notificationCounter"
+      );
+      let unreadNotifications = 3; // Example count
+
+      // Toggle Notification Panel
+      notificationIcon.addEventListener("click", function () {
+        notificationPanel.classList.toggle("visible");
+      });
+
+      // Close Notification Panel
+      closeNotificationPanel.addEventListener("click", function () {
+        notificationPanel.classList.remove("visible");
+      });
+
+      // Toggle Sidebar
+      hamburgerMenu.addEventListener("click", function () {
+        sidebar.classList.toggle("collapsed");
+      });
+
+      // Show Modal and Mark Notification as Read
+      function showNotificationModal(id) {
+        const notificationTitle = document.getElementById(
+          "notificationModalLabel"
+        );
+        const notificationMessage = document.getElementById(
+          "notificationMessage"
+        );
+        const notificationTimestamp = document.getElementById(
+          "notificationTimestamp"
+        );
+
+        const notification = document.querySelector(
+          `.notification[data-id="${id}"]`
+        );
+
+        notificationTitle.textContent =
+          notification.querySelector("h5").textContent;
+        notificationMessage.textContent =
+          notification.querySelector("p").textContent;
+        notificationTimestamp.textContent =
+          notification.querySelector("small").textContent;
+
+        notification.classList.remove("unread");
+
+        // Decrease unread notification count
+        if (unreadNotifications > 0) {
+          unreadNotifications--;
+          notificationCounter.textContent = unreadNotifications;
+        }
+
+        const modal = new bootstrap.Modal(
+          document.getElementById("notificationModal")
+        );
+        modal.show();
+      }
+    </script>
+  </body>
+</html>
